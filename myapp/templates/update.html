@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Users</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #34495e;
+            margin-bottom: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            text-align: left;
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+        }
+        th {
+            background-color:rgba(17, 13, 247, 0.833);
+            color: white;
+            text-align: center;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        input[type="text"], input[type="date"], input[type="submit"] {
+            width: 90%;
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        input[type="submit"] {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #2980b9;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            font-size: 16px;
+            text-decoration: none;
+            color: #3a0fe4;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .error-message {
+        color: red;
+        font-size: 12px;
+        display: block;
+        padding: 0; /* Remove padding */
+    }
+        input.error {
+            border: 1px solid red;
+        }
+
+        input {
+            margin-bottom: 0; 
+        }
+
+    textarea {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    font-size: 14px;
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    resize: vertical;
+    padding: 8px; /* Placeholder aur text ke liye space */
+    line-height: 1.5; /* Cursor aur text alignment ke liye */
+    box-sizing: border-box; /* Width calculation sahi rahe */
+}
+    </style>
+
+    <script>
+        // Attach the validation to all forms with class .book-form
+        document.querySelectorAll('.book-form').forEach(form => {
+            form.addEventListener('submit', function(event) {
+                validateForm(event, form);
+            });
+        });
+
+        
+    </script>
+</head>
+<body>
+
+    <div class="container">
+        <h1>UPDATE BOOK</h1>
+
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Book Title</th>
+                    <th>Author</th>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Book Type</th>
+                    <th>Update</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in users %}
+                <tr>
+                    <form action="{% url 'update' i.id %}" method="post" id="bookForm" onsubmit="validateForm(event)">
+                        {% csrf_token %}
+                        <td>
+                            <input type="text" name="title" id="title" value="{{ i.title }}"required>
+                            <span id="titleError" class="error-message"></span> 
+                        </td>
+                        <td>
+                            <input type="text" name="author" id="author" value="{{ i.author }}"required>
+                            <span id="authorError" class="error-message"></span>
+                        </td>
+                        <td>
+                            <input type="date" name="date" required id="date" value="{{ i.date|date:'Y-m-d' }}" onchange="validateDate()"required>
+                            <span id="dateError" style="color: red;"></span>
+                        </td>
+                        <td>
+                        <textarea name="description" id="description" rows="4" required>{{ i.description }}
+                        </textarea>
+                            <span id="descriptionError" class="error-message"></span> 
+                            </td>
+
+                        <td>
+                            <select name="book_type">
+                                <option value="Religious" {% if i.book_type == "Religious" %}selected{% endif %}>Religious</option>
+                                <option value="Adventure" {% if i.book_type == "Adventure" %}selected{% endif %}>Adventure</option>
+                                <option value="Science Fiction" {% if i.book_type == "Science Fiction" %}selected{% endif %}>Science Fiction</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="submit" value="Update" style="background-color: rgba(17, 13, 247, 0.833);;">
+                        </td>
+                    </form>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <a href="{% url 'index' %}" class="back-link" style="display: inline; margin-left: 490px;">Back to Home</a>
+    </div>
+
+<script>
+        function validateForm(event) {
+            event.preventDefault(); // Prevent form submission
+    
+            // Input fields
+            const titleField = document.getElementById("title");
+            const authorField = document.getElementById("author");
+            const descriptionField = document.getElementById("description");
+    
+            // Error message elements
+            const titleError = document.getElementById("titleError");
+            const authorError = document.getElementById("authorError");
+            const descriptionError = document.getElementById("descriptionError");
+    
+            // Get trimmed values
+            const title = titleField.value.trim();
+            const author = authorField.value.trim();
+            const description = descriptionField.value.trim();
+    
+            // Regex for validations
+           
+            const numberRegex = /\d/; // For numbers
+            const doubleSpaceRegex = /^\s|\s{2,}|\s$/; // Starting/ending and consecutive spaces
+            const singleSpaceAllowedRegex = /^[^\s]+(\s[^\s]+)*$/; // Allows only one space between words
+    
+            // Clear previous errors
+            titleError.textContent = "";
+            authorError.textContent = "";
+            descriptionError.textContent = "";
+            titleField.classList.remove("error");
+            authorField.classList.remove("error");
+            descriptionField.classList.remove("error");
+    
+            let isValid = true;
+    
+            // Validation for Title
+            if (title.length < 3 || title.length > 50) {
+                titleError.textContent = "Title must be 3-50 characters.";
+                titleField.classList.add("error");
+                isValid = false;
+            } else if (
+                doubleSpaceRegex.test(title) ||
+                numberRegex.test(title) ||
+                !singleSpaceAllowedRegex.test(title)
+            ) {
+                titleError.textContent = "No, numbers, or extra spaces.";
+                titleField.classList.add("error");
+                isValid = false;
+            }
+    
+            // Validation for Author
+            if (author.length < 3 || author.length > 50) {
+                authorError.textContent = "Author must be 3-50 characters.";
+                authorField.classList.add("error");
+                isValid = false;
+            } else if (
+                doubleSpaceRegex.test(author) ||
+                numberRegex.test(author) ||
+                !singleSpaceAllowedRegex.test(author)
+            ) {
+                authorError.textContent = "No numbers, or extra spaces.";
+                authorField.classList.add("error");
+                isValid = false;
+            }
+    
+            // Validation for Description
+            if (description.length < 10 || description.length > 150) {
+                descriptionError.textContent = "Description must be 10-150 characters.";
+                descriptionField.classList.add("error");
+                isValid = false;
+            } else if (
+                doubleSpaceRegex.test(description) ||
+                !singleSpaceAllowedRegex.test(description)
+            ) {
+                descriptionError.textContent = "No numbers or extra spaces.";
+                descriptionField.classList.add("error");
+                isValid = false;
+            }
+    
+            // Submit the form if all validations pass
+            if (isValid) {
+                document.getElementById("bookForm").submit();
+            }
+        }
+
+// -----------------------------
+        function validateDate() {
+        var dateInput = document.getElementById('date');
+        var errorMessage = document.getElementById('dateError');
+        var enteredDate = new Date(dateInput.value);
+        var currentDate = new Date();
+        
+        // Calculate 500 years ago
+        var dateLimit = new Date();
+        dateLimit.setFullYear(currentDate.getFullYear() - 500);
+
+        if (enteredDate > currentDate) {
+            errorMessage.textContent = "Date cannot be in the future!";
+            dateInput.setCustomValidity("Invalid date");  // This prevents form submission
+        } else if (enteredDate < dateLimit) {
+            errorMessage.textContent = "Date cannot be older than 500 years!";
+            dateInput.setCustomValidity("Invalid date");  // This prevents form submission
+        } else {
+            errorMessage.textContent = "";
+            dateInput.setCustomValidity("");  // Reset custom validity if the date is valid
+        }
+    }
+    </script>
+        
+
+</body>
+</html>

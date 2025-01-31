@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Records</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 400px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #34495e;
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        input[type="text"], input[type="date"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        input[type="submit"] {
+            background-color: #3498db;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #2980b9;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            font-size: 16px;
+            text-decoration: none;
+            color: #3498db;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .error-message {
+        color: red;
+        font-size: 12px;
+        display: block;
+        padding-bottom: 15px; /* Remove padding */
+    }
+
+        input.error {
+            border: 1px solid red;
+        }
+
+        input {
+            margin-bottom: 0; /* Remove default margin */
+        } 
+       
+    textarea {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    font-size: 14px;
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    resize: vertical;
+    padding: 8px; /* Placeholder aur text ke liye space */
+    line-height: 1.5; /* Cursor aur text alignment ke liye */
+    box-sizing: border-box; /* Width calculation sahi rahe */
+}
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>ADD BOOK</h1>
+
+        <form action="{% url 'add_records' %}" method="post" id="bookForm" onsubmit="validateForm(event)">
+            {% csrf_token %}
+            
+            <!-- Book Title -->
+            <label for="text" style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;">
+                Book Title<span style="color: red;">*</span>
+            </label>
+            <input type="text" placeholder="Enter Book Title" name="title" id="title" required>
+            <span id="titleError" class="error-message"></span> <!-- Error message for title -->
+        
+            <!-- Author Name -->
+            <label for="text" style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;">
+                Author Name<span style="color: red;">*</span>
+            </label>
+            <input type="text" placeholder="Enter Author" name="author" id="author" required>
+            <span id="authorError" class="error-message"></span> <!-- Error message for author -->
+        
+            <!-- Book Type -->
+            <div class="form-group">
+                <label for="book_type">Book Type<span class="asterisk" style="color: red;">*</span></label>
+                <select id="book_type" name="book_type" required>
+                    <option value="">Select Book Type</option>
+                    <option value="Religious">Religious</option>
+                    <option value="Adventure">Adventure</option>
+                    <option value="Science Fiction">Science Fiction</option>
+                </select>
+            </div><br>
+        
+            <!-- Published Date -->
+            <label for="text" style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;">
+                Published Date<span style="color: red;">*</span>
+            </label>
+            <input type="date" name="date" required id="date" onchange="validateDate()">
+            <span id="dateError" style="color: red;"></span>
+            
+        
+            <!-- Book Description -->
+            <label for="text" style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;">
+                Book Description
+            </label>
+
+            <textarea placeholder="Enter Description" name="description" id="description" rows="4" required></textarea>
+            
+            <span id="descriptionError" class="error-message"></span> <!-- Error message for description -->
+        
+            <!-- Submit Button -->
+            <input type="submit" value="Submit">
+        </form><br>
+
+        <a href="{% url 'index' %}" class="back-link" style="display: inline; margin-left: 150px;">Back to Home</a>
+    </div>
+    <script>
+        function validateForm(event) {
+            event.preventDefault(); // Prevent form submission
+    
+            // Input fields
+            const titleField = document.getElementById("title");
+            const authorField = document.getElementById("author");
+            const descriptionField = document.getElementById("description");
+    
+            // Error message elements
+            const titleError = document.getElementById("titleError");
+            const authorError = document.getElementById("authorError");
+            const descriptionError = document.getElementById("descriptionError");
+    
+            // Get trimmed values
+            const title = titleField.value.trim();
+            const author = authorField.value.trim();
+            const description = descriptionField.value.trim();
+    
+            // Regex for validations
+           
+            const numberRegex = /\d/; // For numbers
+            const doubleSpaceRegex = /^\s|\s{2,}|\s$/; // Starting/ending and consecutive spaces
+            const singleSpaceAllowedRegex = /^[^\s]+(\s[^\s]+)*$/; // Allows only one space between words
+    
+            // Clear previous errors
+            titleError.textContent = "";
+            authorError.textContent = "";
+            descriptionError.textContent = "";
+            titleField.classList.remove("error");
+            authorField.classList.remove("error");
+            descriptionField.classList.remove("error");
+    
+            let isValid = true;
+    
+            // Validation for Title
+            if (title.length < 3 || title.length > 50) {
+                titleError.textContent = "Book Title must be 3-50 characters.";
+                titleField.classList.add("error");
+                isValid = false;
+            } else if (
+                doubleSpaceRegex.test(title) ||
+                numberRegex.test(title) ||
+                !singleSpaceAllowedRegex.test(title)
+            ) {
+                titleError.textContent = "No, numbers, or extra spaces.";
+                titleField.classList.add("error");
+                isValid = false;
+            }
+    
+            // Validation for Author
+            if (author.length < 3 || author.length > 50) {
+                authorError.textContent = "Author must be 3-50 characters.";
+                authorField.classList.add("error");
+                isValid = false;
+            } else if (
+                doubleSpaceRegex.test(author) ||
+                numberRegex.test(author) ||
+                !singleSpaceAllowedRegex.test(author)
+            ) {
+                authorError.textContent = "No numbers, or extra spaces.";
+                authorField.classList.add("error");
+                isValid = false;
+            }
+    
+            // Validation for Description
+            if (description.length < 10 || description.length > 150) {
+                descriptionError.textContent = "Book Description must be 10-150 characters.";
+                descriptionField.classList.add("error");
+                isValid = false;
+            } else if (
+                doubleSpaceRegex.test(description) ||
+                !singleSpaceAllowedRegex.test(description)
+            ) {
+                descriptionError.textContent = "No numbers or extra spaces.";
+                descriptionField.classList.add("error");
+                isValid = false;
+            }
+    
+            // Submit the form if all validations pass
+            if (isValid) {
+                document.getElementById("bookForm").submit();
+            }
+        }
+
+// ----------------------------------------------
+        function validateDate() {
+        var dateInput = document.getElementById('date');
+        var errorMessage = document.getElementById('dateError');
+        var enteredDate = new Date(dateInput.value);
+        var currentDate = new Date();
+        
+        // Calculate 500 years ago
+        var dateLimit = new Date();
+        dateLimit.setFullYear(currentDate.getFullYear() - 500);
+
+        if (enteredDate > currentDate) {
+            errorMessage.textContent = "Published Date cannot be in the future!";
+            dateInput.setCustomValidity("Invalid date");  // This prevents form submission
+        } else if (enteredDate < dateLimit) {
+            errorMessage.textContent = "Published Date cannot be older than 500 years!";
+            dateInput.setCustomValidity("Invalid date");  // This prevents form submission
+        } else {
+            errorMessage.textContent = "";
+            dateInput.setCustomValidity("");  // Reset custom validity if the date is valid
+        }
+    }
+
+
+  
+    
+    </script>
+    
+    
+</body>
+</html>
